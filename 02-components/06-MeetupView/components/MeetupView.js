@@ -35,14 +35,14 @@ export default defineComponent({
         <div class="meetup">
           <div class="meetup__content">
               <h3>Описание</h3>
-              <MeetupDescription :description="meetup.description" />
-              <template v-if="meetup.agenda.length != 0">
-              <h3>Программа</h3>
-              <MeetupAgenda :agenda="meetup.agenda" />
-            </template>
-            <template v-else>
-              <UiAlert v-else>Программа пока пуста...</UiAlert>
-            </template>
+                <MeetupDescription :description="meetup.description" />
+                <template v-if="meetup.agenda.length != 0">
+                  <h3>Программа</h3>
+                  <MeetupAgenda :agenda="meetup.agenda" />
+                </template>
+                <template v-else>
+                  <UiAlert>Программа пока пуста...</UiAlert>
+                </template>
           </div>
           <div class="meetup__aside">
             <MeetupInfo :organizer="meetup.organizer" :place="meetup.place" :date="meetup.date" />

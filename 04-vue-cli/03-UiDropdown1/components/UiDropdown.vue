@@ -1,28 +1,92 @@
 <template>
-  <div class="dropdown dropdown_opened">
-    <button type="button" class="dropdown__toggle dropdown__toggle_icon">
-      <UiIcon icon="tv" class="dropdown__icon" />
-      <span>Title</span>
+  <div class="dropdown" :class="{ 'dropdown_opened': isOpened }">
+    <button type="button" class="dropdown__toggle" :class="{ 'dropdown__toggle_icon': isAnyIcon }" @click="isOpened = !isOpened">
+      <UiIcon v-if="isAnyIcon && selectedItem && selectedItem.icon" :icon="selectedItem.icon" class="dropdown__icon" />
+      <span>{{ selectedItem ? selectedItem.text : title }}</span>
     </button>
 
-    <div class="dropdown__menu" role="listbox">
-      <button class="dropdown__item dropdown__item_icon" role="option" type="button">
-        <UiIcon icon="tv" class="dropdown__icon" />
-        Option 1
-      </button>
-      <button class="dropdown__item dropdown__item_icon" role="option" type="button">
-        <UiIcon icon="tv" class="dropdown__icon" />
-        Option 2
+    <div class="dropdown__menu" v-show="isOpened" role="listbox">
+      <button class="dropdown__item" :class="{ 'dropdown__item_icon': isAnyIcon }" role="option" type="button" v-for="item in options" :key="item.text" @click="$event => rebuildMenu(item)">
+        <UiIcon v-if="item.icon" :icon="item.icon" class="dropdown__icon" />
+        {{ item.text }}
       </button>
     </div>
   </div>
 </template>
 
 <script>
+import { handleError } from 'vue';
 import UiIcon from './UiIcon.vue';
 
 export default {
   name: 'UiDropdown',
+
+  data() {
+    return {
+      isOpened: false,
+      // isAnyIcon: false,
+    };
+  },
+
+  // mounted() {
+  //   this.isAnyIcon = this.options.some(el => Object.keys(el).includes('icon'));
+  // },
+
+  computed: {
+    // it seems this should be done in mounted
+    // so in won't recalculate on .pop() last item in menu
+    // but the test won't accept it
+    isAnyIcon() {
+      return this.options.some(el => Object.keys(el).includes('icon'));
+    },
+    
+    selectedItem() {
+      return this.modelValue && this.options.find(el => el.value == this.modelValue);
+    },
+  },
+
+  watch: {
+    options: {
+      handler(newValue) {
+
+        if (newValue.length) {
+          // too complicated?
+          if (!newValue.some(el => el.value == this.modelValue)) {
+            this.$emit('update:modelValue', newValue[newValue.length - 1].value);
+          } 
+        } else this.$emit('update:modelValue', null);
+      },
+
+      deep: true,
+    }
+  },
+
+  methods: {
+    rebuildMenu(item) {
+      this.$emit('update:modelValue', item.value);
+      this.isOpened = false;
+    },
+  },
+
+  props: {
+    title: {
+      type: String,
+      required: true,
+    },
+
+    modelValue: {
+      type: String,
+      // default: 'registration',
+    },
+
+    options: {
+      type: Object,
+      required: true,
+    },
+
+  },
+
+  emits: ['update:modelValue'],
 
   components: { UiIcon },
 };

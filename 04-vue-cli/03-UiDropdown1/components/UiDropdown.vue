@@ -6,11 +6,19 @@
     </button>
 
     <div class="dropdown__menu" v-show="isOpened" role="listbox">
-      <button class="dropdown__item" :class="{ 'dropdown__item_icon': isAnyIcon }" role="option" type="button" v-for="item in options" :key="item.text" @click="$event => rebuildMenu(item)">
+      <button class="dropdown__item" :class="{ 'dropdown__item_icon': isAnyIcon }" role="option" type="button" v-for="item in options" :key="item.value" @click="$event => rebuildMenu(item)">
         <UiIcon v-if="item.icon" :icon="item.icon" class="dropdown__icon" />
         {{ item.text }}
       </button>
     </div>
+  </div>
+
+  <div v-show="false">
+    <select :value="modelValue" @change="$emit('update:modelValue', $event.target.value)">
+      <option v-for="item in options" :value="item.value" :key="item.value">
+        {{ item.text }}
+      </option>
+    </select>
   </div>
 </template>
 
@@ -39,9 +47,18 @@ export default {
     isAnyIcon() {
       return this.options.some(el => Object.keys(el).includes('icon'));
     },
-    
+
     selectedItem() {
       return this.modelValue && this.options.find(el => el.value == this.modelValue);
+    },
+
+    selectModelValue: {
+      get() {
+        return this.modelValue
+      },
+      set(newValue) {
+        this.$emit('update:modelValue', newValue)
+      },
     },
   },
 
@@ -53,7 +70,7 @@ export default {
           // too complicated?
           if (!newValue.some(el => el.value == this.modelValue)) {
             this.$emit('update:modelValue', newValue[newValue.length - 1].value);
-          } 
+          }
         } else this.$emit('update:modelValue', null);
       },
 
@@ -76,7 +93,6 @@ export default {
 
     modelValue: {
       type: String,
-      // default: 'registration',
     },
 
     options: {

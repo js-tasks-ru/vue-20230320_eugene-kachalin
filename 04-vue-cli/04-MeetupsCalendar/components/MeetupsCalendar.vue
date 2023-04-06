@@ -2,43 +2,31 @@
   <div class="calendar-view">
     <div class="calendar-view__controls">
       <div class="calendar-view__controls-inner">
-        <button class="calendar-view__control-left" type="button" aria-label="Previous month"></button>
-        <div class="calendar-view__date">{{ today }}</div>
-        <button class="calendar-view__control-right" type="button" aria-label="Next month"></button>
+        <button class="calendar-view__control-left" type="button" aria-label="Previous month" @click="previousMonth"></button>
+        <div class="calendar-view__date">{{ todayText }}</div>
+        <button class="calendar-view__control-right" type="button" aria-label="Next month" @click="nextMonth"></button>
       </div>
     </div>
 
     <div class="calendar-view__grid">
-      <!-- Begin before month -->
-      <div class="calendar-view__cell calendar-view__cell_inactive" tabindex="0" v-for="day in getPrevDays()" :key="day">
-        <div class="calendar-view__cell-day">{{ numberOfDaysInMonth }}</div>
+      <!-- Begin previous month -->
+      <div class="calendar-view__cell calendar-view__cell_inactive" tabindex="0" v-for="day in previousMonthDays" :key="day">
+        <div class="calendar-view__cell-day">{{ day.date }}</div>
         <div class="calendar-view__cell-content"></div>
       </div>
-      <!-- End before month -->
-      <!-- Begin month -->
-      <div class="calendar-view__cell" tabindex="0">
-        <div class="calendar-view__cell-day">{{ getDate(firstDayOfMonth()) }}</div>
+      <!-- End previous month -->
+      <!-- Begin current month -->
+      <div class="calendar-view__cell" tabindex="0" v-for="day in currentMonthDays" :key="day.date">
+        <div class="calendar-view__cell-day">{{ day.date }}</div>
         <div class="calendar-view__cell-content"></div>
       </div>
-      <div class="calendar-view__cell" tabindex="0">
-        <div class="calendar-view__cell-day">{{ getDate(firstDayOfMonth() + 1) }}</div>
+      <!-- End current month -->
+      <!-- Begin next month -->
+      <div class="calendar-view__cell calendar-view__cell_inactive" tabindex="0" v-for="day in nextMonthDays" :key="day.date">
+        <div class="calendar-view__cell-day">{{ day.date }}</div>
         <div class="calendar-view__cell-content"></div>
       </div>
-      <div class="calendar-view__cell" tabindex="0">
-        <div class="calendar-view__cell-day">3</div>
-        <div class="calendar-view__cell-content"></div>
-      </div>
-      <div class="calendar-view__cell" tabindex="0">
-        <div class="calendar-view__cell-day">4</div>
-        <div class="calendar-view__cell-content"></div>
-      </div>
-      <!-- End month -->
-      <!-- Begin after month -->
-      <div class="calendar-view__cell calendar-view__cell_inactive" tabindex="0">
-        <div class="calendar-view__cell-day">1</div>
-        <div class="calendar-view__cell-content"></div>
-      </div>
-
+        <!-- End next month -->
     </div>
   </div>
 </template>
@@ -69,99 +57,85 @@ export default {
       ];
     },
 
-    today() {
-      return (new Date).toLocaleDateString(navigator.language, {
+    todayText() {
+      return this.selectedDate.toLocaleDateString(navigator.language, {
         month: 'long',
         year: 'numeric',
       })
     },
 
-    numberOfDaysInMonth() {
-      return new Date(this.selectedDate.getFullYear(),
-        this.selectedDate.getMonth() + 1,
-        0).getDate();
-    },
-
     month() {
-      return Number(this.selectedDate.getMonth());
+      return this.selectedDate.getMonth();
     },
 
     year() {
-      return Number(this.selectedDate.getFullYear());
+      return this.selectedDate.getFullYear();
     },
 
     currentMonthDays() {
-      return [...Array(this.numberOfDaysInMonth)].map((day, index) => {
+      const days = new Date(this.year, this.month + 1, 0).getDate();
+      
+      return [...Array(days)].map((day, index) => {
         return {
-          date: `${this.year}-${this.month}-${index + 1}`,
+          date: new Date(
+            this.year,
+            this.month,
+            // Magic
+            index + 1)
+            .getDate(),
           isCurrentMonth: true
         };
       });
     },
 
     previousMonthDays() {
-      const firstDayOfTheMonthWeekday = this.getWeekday(
-        this.currentMonthDays[0].date
-      );
-      const firstDate = new Date(`${this.year}-${this.month}-01`);
-      const previousMonth = new Date(
-        firstDate.setMonth(
-          firstDate.getMonth() - 1
-        ));
+      // days == Sunday => 0 days for the previous month
+      const days = new Date(this.year, this.month, 0).getDay();
+      
+      if (!days) return [];
 
-      // Cover first day of the month being sunday (firstDayOfTheMonthWeekday === 0)
-      const visibleNumberOfDaysFromPreviousMonth = firstDayOfTheMonthWeekday
-        ? firstDayOfTheMonthWeekday - 1
-        : 6;
+      return [...Array(days)].map((day, index) => {
+        return {
+          date: new Date(
+            this.year,
+            this.month,
+            // Magic
+            index - days + 1)
+            .getDate(),
+          isCurrentMonth: false
+        };
+      });
+    },
 
-      const previousMonthLastMondayDayOfMonth = dayjs(
-        this.currentMonthDays[0].date
-      )
-        .subtract(visibleNumberOfDaysFromPreviousMonth, "day")
-        .date();
+    nextMonthDays() {
+      // Sunday == 0 => 0 days left for the next month
+      let days = new Date(this.year, this.month + 1, 0).getDay();
+      
+      if (!days) return []
+      else days = 7 - days;
 
-      return [...Array(visibleNumberOfDaysFromPreviousMonth)].map(
-        (day, index) => {
-          return {
-            date: dayjs(
-              `${previousMonth.year()}-${previousMonth.month() +
-              1}-${previousMonthLastMondayDayOfMonth + index}`
-            ).format("YYYY-MM-DD"),
-            isCurrentMonth: false
-          };
-        }
-      );
+      return [...Array(days)].map((day, index) => {
+        return {
+          date: new Date(
+            this.year,
+            this.month,
+            // Magic
+            index + 1)
+            .getDate(),
+          isCurrentMonth: false
+        };
+      });
     },
 
   },
 
   methods: {
-    getWeekday(date) {
-      return (new Date(date)).getDay() + 1;
-    },
-    
-    firstDayOfMonth() {
-      const date = new Date(2023, 3);
-      return date;
+    nextMonth() {
+      this.selectedDate = new Date(this.year, this.month + 1);
     },
 
-    dateToDayOfWeek(date) {
-      let day = (new Date(date)).getDay();
-      if (day == 0) day = 7;
-      return day - 1;
-    },
-
-    getDate(date) {
-      return (new Date(date)).getDate();
-    },
-
-    getPrevDays() {
-      let days = [];
-      for (let i = 0; i < this.dateToDayOfWeek(this.firstDayOfMonth()); i++) {
-        days.push(i);
-      }
-      console.log(days);
-      return days;
+    previousMonth() {
+      this.selectedDate = new Date(this.year, this.month - 1);
     }
   },
 };

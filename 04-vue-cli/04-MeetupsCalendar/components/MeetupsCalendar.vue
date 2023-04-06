@@ -9,24 +9,10 @@
     </div>
 
     <div class="calendar-view__grid">
-      <!-- Begin previous month -->
-      <div class="calendar-view__cell calendar-view__cell_inactive" tabindex="0" v-for="day in previousMonthDays" :key="day">
+      <div class="calendar-view__cell" :class="{'calendar-view__cell_inactive': !day.isCurrentMonth}" tabindex="0" v-for="day in days" :key="day">
         <div class="calendar-view__cell-day">{{ day.date }}</div>
         <div class="calendar-view__cell-content"></div>
       </div>
-      <!-- End previous month -->
-      <!-- Begin current month -->
-      <div class="calendar-view__cell" tabindex="0" v-for="day in currentMonthDays" :key="day.date">
-        <div class="calendar-view__cell-day">{{ day.date }}</div>
-        <div class="calendar-view__cell-content"></div>
-      </div>
-      <!-- End current month -->
-      <!-- Begin next month -->
-      <div class="calendar-view__cell calendar-view__cell_inactive" tabindex="0" v-for="day in nextMonthDays" :key="day.date">
-        <div class="calendar-view__cell-day">{{ day.date }}</div>
-        <div class="calendar-view__cell-content"></div>
-      </div>
-        <!-- End next month -->
     </div>
   </div>
 </template>

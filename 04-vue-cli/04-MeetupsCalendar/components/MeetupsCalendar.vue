@@ -88,13 +88,19 @@ export default {
       if (!days) return [];
 
       return [...Array(days)].map((day, index) => {
+
+        let date = new Date(
+          this.year,
+          this.month,
+          // Magic
+          index - days + 1);
+
+        const meetupsForDay = this.fetchMeetups(date);
+
         return {
-          date: new Date(
-            this.year,
-            this.month,
-            // Magic
-            index - days + 1).getDate(),
-          isCurrentMonth: false
+          date: date.getDate(),
+          isCurrentMonth: false,
+          meetupsForDay: meetupsForDay,
         };
       });
     },
@@ -104,17 +110,21 @@ export default {
       let days = new Date(this.year, this.month + 1, 0).getDay();
 
       if (!days) return [];
-
       days = 7 - days;
 
       return [...Array(days)].map((day, index) => {
+
+        let date = new Date(
+          this.year,
+          this.month,
+          index + 1);
+
+        const meetupsForDay = this.fetchMeetups(date);
+
         return {
-          date: new Date(
-            this.year,
-            this.month,
-            index + 1)
-            .getDate(),
-          isCurrentMonth: false
+          date: date.getDate(),
+          isCurrentMonth: false,
+          meetupsForDay: meetupsForDay,
         };
       });
     },
@@ -135,7 +145,7 @@ export default {
 
       // seems to be O(n^2)
       const meetupsForDay = this.meetups.filter(el => el.date == date);
-      
+
       return meetupsForDay;
     },
   },

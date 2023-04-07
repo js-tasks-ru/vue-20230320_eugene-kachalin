@@ -9,9 +9,12 @@
     </div>
 
     <div class="calendar-view__grid">
-      <div class="calendar-view__cell" :class="{'calendar-view__cell_inactive': !day.isCurrentMonth}" tabindex="0" v-for="day in days" :key="day">
+      <div class="calendar-view__cell" :class="{ 'calendar-view__cell_inactive': !day.isCurrentMonth }" tabindex="0" v-for="day in days" :key="day">
         <div class="calendar-view__cell-day">{{ day.date }}</div>
-        <div class="calendar-view__cell-content"></div>
+        <div class="calendar-view__cell-content">
+          <div class="calendar-event" v-for="meetup in day.meetupsForDay" :key="meetup.id">{{ meetup.title }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -60,16 +63,20 @@ export default {
 
     currentMonthDays() {
       const days = new Date(this.year, this.month + 1, 0).getDate();
-      
+
       return [...Array(days)].map((day, index) => {
+
+        let date = new Date(
+          this.year,
+          this.month,
+          index + 1);
+
+        const meetupsForDay = this.fetchMeetups(date);
+
         return {
-          date: new Date(
-            this.year,
-            this.month,
-            // Magic
-            index + 1)
-            .getDate(),
-          isCurrentMonth: true
+          date: date.getDate(),
+          isCurrentMonth: true,
+          meetupsForDay: meetupsForDay,
         };
       });
     },
@@ -77,7 +84,7 @@ export default {
     previousMonthDays() {
       // days == Sunday => 0 days for the previous month
       const days = new Date(this.year, this.month, 0).getDay();
-      
+
       if (!days) return [];
 
       return [...Array(days)].map((day, index) => {
@@ -86,8 +93,7 @@ export default {
             this.year,
             this.month,
             // Magic
-            index - days + 1)
-            .getDate(),
+            index - days + 1).getDate(),
           isCurrentMonth: false
         };
       });
@@ -96,16 +102,16 @@ export default {
     nextMonthDays() {
       // Sunday == 0 => 0 days left for the next month
       let days = new Date(this.year, this.month + 1, 0).getDay();
-      
-      if (!days) return []
-      else days = 7 - days;
+
+      if (!days) return [];
+
+      days = 7 - days;
 
       return [...Array(days)].map((day, index) => {
         return {
           date: new Date(
             this.year,
             this.month,
-            // Magic
             index + 1)
             .getDate(),
           isCurrentMonth: false
@@ -122,7 +128,16 @@ export default {
 
     previousMonth() {
       this.selectedDate = new Date(this.year, this.month - 1);
-    }
+    },
+
+    fetchMeetups(date) {
+      date = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+
+      // seems to be O(n^2)
+      const meetupsForDay = this.meetups.filter(el => el.date == date);
+      
+      return meetupsForDay;
+    },
   },
 };
 </script>

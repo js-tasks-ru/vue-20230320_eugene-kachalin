@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { isAuthenticated } from '../services/authService.js';
+// import { isAuthenticated } from '../services/authService.js';
+import { log, auth, guest } from '../services/middleware.js';
 
 const router = createRouter({
   history: createWebHistory('/05-vue-router/05-AuthGuard'),
@@ -8,32 +9,39 @@ const router = createRouter({
       path: '/',
       alias: '/meetups',
       component: () => import('../views/PageMeetups.vue'),
+      meta: {
+        middleware: log
+      },
     },
     {
       path: '/login',
       meta: {
-        requireGuest: true,
+        // requireGuest: true,
+        middleware: [guest, log],
       },
       component: () => import('../views/PageLogin.vue'),
     },
     {
       path: '/register',
       meta: {
-        requireGuest: true,
+        // requireGuest: true,
+        middleware: [guest, log],
       },
       component: () => import('../views/PageRegister.vue'),
     },
     {
       path: '/meetups/create',
       meta: {
-        requireAuth: true,
+        // requireAuth: true,
+        middleware: [auth, log],
       },
       component: () => import('../views/PageCreateMeetup.vue'),
     },
     {
       path: '/meetups/:meetupId(\\d+)/edit',
       meta: {
-        requireAuth: true,
+        // requireAuth: true,
+        middleware: [auth, log],
       },
       component: () => import('../views/PageEditMeetup.vue'),
     },
@@ -41,14 +49,25 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from) => {
-  const requireAuth = to.meta.requireAuth,
-    requireGuest = to.meta.requireGuest;
+  if (to.meta.middleware) {
+    const middlewares = Array.isArray(to.meta.middleware)
+      ? to.meta.middleware
+      : [to.meta.middleware];
 
-  if (!isAuthenticated()) {
-    return requireAuth ? {path: '/login', query: {from: to.path} } : true;
-  } else {
-    return requireGuest ? '/' : true;
+    for (let middleware of middlewares) {
+      const result = middleware(to, from);
+      if (result !== undefined && result !== true) return result;
+    }
   }
+
+  // const requireAuth = to.meta.requireAuth,
+  //   requireGuest = to.meta.requireGuest;
+
+  // if (!isAuthenticated()) {
+  //   return requireAuth ? {path: '/login', query: {from: to.path} } : true;
+  // } else {
+  //   return requireGuest ? '/' : true;
+  // }
 
 });
 

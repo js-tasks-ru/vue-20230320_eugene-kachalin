@@ -1,0 +1,278 @@
+<template>
+    <div class="calendar-view">
+        <div class="calendar-view__controls">
+            <div class="calendar-view__controls-inner">
+                <button class="calendar-view__control-left" type="button" aria-label="Previous month" @click="previousMonth"></button>
+                <div class="calendar-view__date">{{ todayText }}</div>
+                <button class="calendar-view__control-right" type="button" aria-label="Next month" @click="nextMonth"></button>
+            </div>
+        </div>
+
+        <div class="calendar-view__grid">
+            <!-- Begin true month -->
+            <div class="calendar-view__cell calendar-view__cell_inactive" tabindex="0" v-for="day in days" :key="day">
+                <div class="calendar-view__cell-day">{{ day.date }}</div>
+                <div class="calendar-view__cell-content"></div>
+            </div>
+            <!-- End true month -->
+            blyat
+            <!-- Begin previous month -->
+            <div class="calendar-view__cell calendar-view__cell_inactive" tabindex="0" v-for="day in previousMonthDays" :key="day">
+                <div class="calendar-view__cell-day">{{ day.date }}</div>
+                <div class="calendar-view__cell-content"></div>
+            </div>
+            <!-- End previous month -->
+            <!-- Begin current month -->
+            <div class="calendar-view__cell" tabindex="0" v-for="day in currentMonthDays" :key="day.date">
+                <div class="calendar-view__cell-day">{{ day.date }}</div>
+                <div class="calendar-view__cell-content"></div>
+            </div>
+            <!-- End current month -->
+            <!-- Begin next month -->
+            <div class="calendar-view__cell calendar-view__cell_inactive" tabindex="0" v-for="day in nextMonthDays" :key="day.date">
+                <div class="calendar-view__cell-day">{{ day.date }}</div>
+                <div class="calendar-view__cell-content"></div>
+            </div>
+            <!-- End next month -->
+        </div>
+    </div>
+</template>
+
+<script>
+export default {
+    name: 'MeetupsCalendar',
+
+    props: {
+        meetups: {
+            type: Array,
+            required: true,
+        },
+    },
+
+    data() {
+        return {
+            selectedDate: new Date(),
+        };
+    },
+
+    computed: {
+        days() {
+            return [
+                ...this.previousMonthDays,
+                ...this.currentMonthDays,
+                ...this.nextMonthDays
+            ];
+        },
+
+        todayText() {
+            return this.selectedDate.toLocaleDateString(navigator.language, {
+                month: 'long',
+                year: 'numeric',
+            })
+        },
+
+        month() {
+            return this.selectedDate.getMonth();
+        },
+
+        year() {
+            return this.selectedDate.getFullYear();
+        },
+
+        currentMonthDays() {
+            const days = new Date(this.year, this.month + 1, 0).getDate();
+
+            return [...Array(days)].map((day, index) => {
+                return {
+                    date: new Date(
+                        this.year,
+                        this.month,
+                        // Magic
+                        index + 1)
+                        .getDate(),
+                    isCurrentMonth: true
+                };
+            });
+        },
+
+        previousMonthDays() {
+            // days == Sunday => 0 days for the previous month
+            const days = new Date(this.year, this.month, 0).getDay();
+
+            if (!days) return [];
+
+            return [...Array(days)].map((day, index) => {
+                return {
+                    date: new Date(
+                        this.year,
+                        this.month,
+                        // Magic
+                        index - days + 1)
+                        .getDate(),
+                    isCurrentMonth: false
+                };
+            });
+        },
+
+        nextMonthDays() {
+            // Sunday == 0 => 0 days left for the next month
+            let days = new Date(this.year, this.month + 1, 0).getDay();
+
+            if (!days) return []
+            else days = 7 - days;
+
+            return [...Array(days)].map((day, index) => {
+                return {
+                    date: new Date(
+                        this.year,
+                        this.month,
+                        // Magic
+                        index + 1)
+                        .getDate(),
+                    isCurrentMonth: false
+                };
+            });
+        },
+
+    },
+
+    methods: {
+        nextMonth() {
+            this.selectedDate = new Date(this.year, this.month + 1);
+        },
+
+        previousMonth() {
+            this.selectedDate = new Date(this.year, this.month - 1);
+        }
+    },
+};
+</script>
+
+<style scoped>
+.calendar-view {}
+
+.calendar-view__controls {
+    text-align: center;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--blue);
+    background-color: var(--blue-extra);
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.calendar-view__controls-inner {
+    max-width: 325px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-transform: capitalize;
+}
+
+.calendar-view__controls-inner button {
+    border: none;
+    padding: 0;
+}
+
+.calendar-view__control-left,
+.calendar-view__control-right {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.3s all;
+    background: url('@/assets/icons/icon-pill-active.svg') left center no-repeat;
+    background-size: cover;
+}
+
+.calendar-view__control-left:hover,
+.calendar-view__control-right:hover {
+    opacity: 0.8;
+}
+
+.calendar-view__control-right {
+    transform: rotate(180deg);
+}
+
+.calendar-view__grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+}
+
+.calendar-view__grid {
+    border: 1px solid var(--grey);
+    border-bottom: none;
+}
+
+.calendar-view__cell {
+    position: relative;
+    height: auto;
+    padding: 6px 8px;
+    background-color: var(--white);
+    color: var(--grey-8);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    border-bottom: 1px solid var(--grey);
+    border-left: 1px solid var(--grey);
+    text-align: right;
+}
+
+.calendar-view__cell.calendar-view__cell_inactive {
+    background-color: var(--grey-light);
+}
+
+@media all and (max-width: 767px) {
+    .calendar-view__cell:nth-child(5n + 1) {
+        border-left: none;
+    }
+}
+
+@media all and (min-width: 767px) {
+    .calendar-view__grid {
+        grid-template-columns: repeat(7, 1fr);
+    }
+
+    .calendar-view__cell {
+        height: 144px;
+    }
+
+    .calendar-view__cell:nth-child(7n + 1) {
+        border-left: none;
+    }
+}
+
+.calendar-event {
+    --max-lines: 2;
+    --line-height: 16px;
+
+    display: block;
+    text-align: left;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: var(--line-height);
+    color: var(--white);
+    padding: 4px 6px;
+    border-radius: 2px;
+    background-color: var(--blue);
+    margin-top: 4px;
+}
+
+@media all and (min-width: 767px) {
+    .calendar-event {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        max-height: calc(var(--max-lines) * var(--line-height) + 6px);
+    }
+}
+</style>

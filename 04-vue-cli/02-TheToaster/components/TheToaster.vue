@@ -1,25 +1,82 @@
 <template>
   <div class="toasts">
-    <div class="toast toast_success">
-      <UiIcon class="toast__icon" icon="check-circle" />
-      <span>Success Toast Example</span>
-    </div>
 
-    <div class="toast toast_error">
-      <UiIcon class="toast__icon" icon="alert-circle" />
-      <span>Error Toast Example</span>
-    </div>
+    <UiToast class="toast" v-for="toast in toasts" :key="toast.id" :toast="toast" @delete="deleteToast" />
+
   </div>
 </template>
 
 <script>
 import UiIcon from './UiIcon.vue';
+import UiToast from './UiToast.vue';
+
 
 export default {
   name: 'TheToaster',
 
-  components: { UiIcon },
-};
+  components: { UiIcon, UiToast },
+
+  data() {
+    return {
+      toasts: [],
+    }
+  },
+
+  methods: {
+    createToast(toastMessage, type, timeout = 5000) {
+      // Math.random() as id/key?
+      const toastId = Math.random();
+      let toastIcon = '';
+      let toastClass = `toast_${type}`;
+
+      switch (type) {
+        case 'success':
+          toastIcon = 'check-circle';
+          break;
+        case 'error':
+          toastIcon = 'alert-circle';
+          break
+        default:
+          toastIcon = 'coffee';
+      }
+
+      let toast = {
+        id: toastId,
+        message: toastMessage,
+        icon: toastIcon,
+        class: toastClass,
+        timerId: null,
+      }
+
+      toast.timerId = setTimeout(
+        this.deleteToast,
+        timeout,
+        toast
+      );
+
+      this.toasts.push(toast);
+
+    },
+
+    success(message) {
+      this.createToast(message, 'success');
+    },
+
+    error(message) {
+      this.createToast(message, 'error');
+    },
+
+    // template for future types
+    otherType(message) {
+      this.createToast(message, 'other', 15000);
+    },
+
+    deleteToast(toast) {
+      clearTimeout(toast.timerId);
+      this.toasts = this.toasts.filter(el => el.id !== toast.id);
+    }
+  },
+}
 </script>
 
 <style scoped>
@@ -55,19 +112,15 @@ export default {
   width: auto;
 }
 
-.toast + .toast {
+.toast+.toast {
   margin-top: 20px;
 }
 
-.toast__icon {
-  margin-right: 12px;
-}
-
-.toast.toast_success {
+/* .toast.toast_success {
   color: var(--green);
-}
+} */
 
-.toast.toast_error {
+/* .toast.toast_error {
   color: var(--red);
-}
+} */
 </style>

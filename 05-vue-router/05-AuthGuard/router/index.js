@@ -48,6 +48,7 @@ const router = createRouter({
   ],
 });
 
+// TODO add async support
 router.beforeEach((to, from) => {
   if (to.meta.middleware) {
     const middlewares = Array.isArray(to.meta.middleware)

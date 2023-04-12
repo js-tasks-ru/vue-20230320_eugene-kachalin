@@ -1,8 +1,18 @@
 <template>
   <div class="image-uploader">
-    <label class="image-uploader__preview image-uploader__preview-loading" style="--bg-url: url('/link.jpeg')">
-      <span class="image-uploader__text">Загрузить изображение</span>
-      <input type="file" accept="image/*" class="image-uploader__input" />
+    <label
+      class="image-uploader__preview"
+      :class="{ 'image-uploader__preview-loading': isUploading }" :style="image ? `--bg-url: url(${image})` : null" @click="handleClick">
+
+        <span class="image-uploader__text">{{ previewMessage }}</span>
+        
+        <input
+          v-bind="$attrs"
+          ref="input"
+          type="file"
+          accept="image/*"
+          class="image-uploader__input"
+          @change="handleFileChange" />
     </label>
   </div>
 </template>
@@ -10,12 +20,86 @@
 <script>
 export default {
   name: 'UiImageUploader',
+  inheritAttrs: false,
+
+  data() {
+    return {
+      isUploading: false,
+      image: null,
+    }
+  },
+
+  created() {
+    if (this.preview) this.image = this.preview;
+  },
+
+  computed: {
+    previewMessage() {
+      if (this.isUploading) return "Загрузка...";
+      return this.image ? 'Удалить изображение' : 'Загрузить изображение';
+    }
+  },
+
+  props: {
+    preview: {
+      type: String,
+    },
+    uploader: {
+      type: Function,
+    },
+  },
+
+  emits: ['select', 'remove', 'error', 'upload'],
+
+  methods: {
+    handleClick(event) {
+      if (this.isUploading) {
+        event.preventDefault();
+      }
+      else if (this.image) {
+        event.preventDefault();
+        this.handleDelete();
+      }
+    },
+
+    handleFileChange(e) {
+      if (e.target.files && e.target.files[0]) {
+        this.$emit('select', e.target.files[0]);
+        this.image = URL.createObjectURL(e.target.files[0]);
+        if (this.uploader) this.handleUpload(e.target.files[0]);
+      }
+    },
+
+    handleDelete() {
+      // где это правильно сделать?
+      if (this.image.slice(0, 4) == 'blob') {
+        URL.revokeObjectURL(this.image);
+      }
+      this.image = null;
+      this.$refs['input'].value = null;
+      this.$emit('remove');
+    },
+
+    handleUpload(file) {
+      this.isUploading = true;
+      this.uploader(file)
+        .then((response) => {
+          this.$emit('upload', response);
+          this.image = response.image;
+          this.isUploading = false;
+        })
+        .catch((error) => {
+          this.$emit('error', error);
+          this.handleDelete();
+          this.isUploading = false;
+        })
+    }
+  }
 };
 </script>
 
 <style scoped>
-.image-uploader {
-}
+.image-uploader {}
 
 .image-uploader__input {
   opacity: 0;

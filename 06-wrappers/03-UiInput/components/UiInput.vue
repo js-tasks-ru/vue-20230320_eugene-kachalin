@@ -7,17 +7,13 @@
       <slot name="left-icon" />
     </div>
 
-    <!-- v-model="proxyModel" не работает с <component> -->
-    <!-- @input="$emit('update:modelValue', $event.target.value)" -->
-
     <component
     :is="multiline ? 'textarea' : 'input'"
-    
     ref="input" 
     v-bind="$attrs" 
 
     :value="modelValue" 
-    @input="$emit('update:modelValue', $event.target.value)"
+    @[updateEvent]="$emit('update:modelValue', $event.target.value)"
     
     class="form-control"
     :class="{
@@ -42,13 +38,12 @@ export default {
     rounded: Boolean,
     multiline: Boolean,
     modelValue: String,
+    
     modelModifiers: {
-      // default: () => ({})
-    }
-  },
-
-  created() {
-    console.log(this.modelModifiers) // { capitalize: true }
+      default: () => ({
+        lazy: false,
+      }),
+    },
   },
 
   emits: {
@@ -56,18 +51,9 @@ export default {
   },
 
   computed: {
-    // не работает с <component>
-    // proxyModel: {
-    //   get() {
-    //     console.log(this.modelValue)
-    //     return this.modelValue;
-    //   },
-
-    //   set(value) {
-    //     console.log(value)
-    //     this.$emit('update:modelValue', value);
-    //   },
-    // },
+    updateEvent() {
+      return this.modelModifiers.lazy ? 'change' : 'input';
+    },
   },
 
   methods: {

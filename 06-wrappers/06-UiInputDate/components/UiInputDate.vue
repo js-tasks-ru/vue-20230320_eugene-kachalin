@@ -17,6 +17,8 @@ export default {
 
   components: { UiInput },
 
+  emits: ['update:modelValue'],
+
   computed: {
     date: {
       get() {

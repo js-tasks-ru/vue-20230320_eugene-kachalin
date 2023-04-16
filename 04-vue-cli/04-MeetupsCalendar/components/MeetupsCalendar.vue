@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import Calendar from '../services/calendar.js';
+
 export default {
   name: 'MeetupsCalendar',
 
@@ -34,10 +36,24 @@ export default {
   data() {
     return {
       selectedDate: new Date(),
+      cal: new Calendar(new Date())
     };
   },
 
   computed: {
+
+    meetupsByDate() {
+      const result = {};
+      for (const meetup of this.meetups) {
+        if (!result[meetup.date]) {
+          result[meetup.date] = [meetup];
+        } else {
+          result[meetup.date].push(meetup);
+        }
+      }
+      return result;
+    },
+
     days() {
       return [
         ...this.previousMonthDays,
@@ -63,20 +79,18 @@ export default {
 
     currentMonthDays() {
       const days = new Date(this.year, this.month + 1, 0).getDate();
-
+      // this.cal.setDate()
       return [...Array(days)].map((day, index) => {
 
         let date = new Date(
-          this.year,
-          this.month,
+          this.cal.year(),
+          this.cal.month(),
           index + 1);
-
-        const meetupsForDay = this.fetchMeetups(date);
 
         return {
           date: date.getDate(),
           isCurrentMonth: true,
-          meetupsForDay: meetupsForDay,
+          meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
         };
       });
     },
@@ -95,12 +109,10 @@ export default {
           // Magic
           index - days + 1);
 
-        const meetupsForDay = this.fetchMeetups(date);
-
         return {
           date: date.getDate(),
           isCurrentMonth: false,
-          meetupsForDay: meetupsForDay,
+          meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
         };
       });
     },
@@ -119,12 +131,10 @@ export default {
           this.month,
           index + 1);
 
-        const meetupsForDay = this.fetchMeetups(date);
-
         return {
           date: date.getDate(),
           isCurrentMonth: false,
-          meetupsForDay: meetupsForDay,
+          meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
         };
       });
     },
@@ -138,15 +148,6 @@ export default {
 
     previousMonth() {
       this.selectedDate = new Date(this.year, this.month - 1);
-    },
-
-    fetchMeetups(date) {
-      date = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
-
-      // seems to be O(n^2)
-      const meetupsForDay = this.meetups.filter(el => el.date == date);
-
-      return meetupsForDay;
     },
   },
 };

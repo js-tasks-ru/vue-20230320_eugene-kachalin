@@ -2,7 +2,7 @@
     <div :class="toast.class">
         <UiIcon class="toast__icon" :icon="toast.icon" />
         <span class="toast__message">{{ toast.message }}</span>
-        <UiIcon class="toast__close" icon="trash" @click="$event => $emit('delete', toast)"/>
+        <UiIcon class="toast__close" icon="trash" @click="$emit('delete')" />
     </div>
 </template>
 
@@ -22,6 +22,29 @@ export default {
             required: true,
         }
     },
+
+    computed: {
+        markup() {
+            const toastTypesMarkup = {
+                success: {
+                    class: 'toast_success',
+                    icon: 'check-circle',
+                },
+
+                error: {
+                    class: 'toast_error',
+                    icon: 'alert-circle',
+                },
+
+                other: {
+                    class: 'toast_other',
+                    icon: 'coffee',
+                }
+            };
+
+            return toastTypesMarkup[this.type];
+        },
+    }
 };
 </script>
 
@@ -33,6 +56,7 @@ export default {
 .toast__message {
     margin-right: 12px;
 }
+
 .toast__close {
     margin-left: auto;
     align-self: flex-end;

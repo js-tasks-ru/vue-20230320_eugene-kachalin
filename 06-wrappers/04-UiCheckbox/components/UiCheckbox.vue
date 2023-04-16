@@ -1,15 +1,36 @@
 <template>
   <label class="checkbox">
-    <input type="checkbox" class="checkbox__input" />
+    <input type="checkbox" class="checkbox__input" v-model="checkModel" v-bind="$attrs" ref="input"/>
     <span class="checkbox__box"></span>
-    Label Text
+    <slot />
   </label>
 </template>
 
 <script>
 export default {
   name: 'UiCheckbox',
-};
+  inheritAttrs: false,
+
+  props: {
+    modelValue: {
+      type: [Boolean, Array, Set],
+      required: true,
+    },
+  },
+
+  emits: ['update:modelValue'],
+
+  computed: {
+    checkModel: {
+      get() {
+        return this.modelValue;
+      },
+      set(data) {
+        this.$emit('update:modelValue', data);
+      }
+    }
+  }
+}
 </script>
 
 <style scoped>
@@ -27,18 +48,18 @@ export default {
   transition-property: background-color, border-color;
 }
 
-.checkbox > input.checkbox__input {
+.checkbox>input.checkbox__input {
   position: absolute;
   z-index: -1;
   opacity: 0;
   padding: 0;
 }
 
-.checkbox > .checkbox__box {
+.checkbox>.checkbox__box {
   border: 2px solid var(--blue-light);
 }
 
-.checkbox > .checkbox__box {
+.checkbox>.checkbox__box {
   border-radius: 8px;
   background: 0 0;
   position: absolute;
@@ -48,11 +69,11 @@ export default {
   width: 28px;
 }
 
-.checkbox > input.checkbox__input:checked ~ .checkbox__box:after {
+.checkbox>input.checkbox__input:checked~.checkbox__box:after {
   display: block;
 }
 
-.checkbox > .checkbox__box:after {
+.checkbox>.checkbox__box:after {
   content: '';
   position: absolute;
   display: none;

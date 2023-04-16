@@ -13,13 +13,11 @@
     </div>
   </div>
 
-  <div v-show="false">
-    <select :value="modelValue" @change="$emit('update:modelValue', $event.target.value)">
-      <option v-for="item in options" :value="item.value" :key="item.value">
-        {{ item.text }}
-      </option>
-    </select>
-  </div>
+  <select v-show="false" :value="modelValue" @change="$emit('update:modelValue', $event.target.value)">
+    <option v-for="item in options" :value="item.value" :key="item.value">
+      {{ item.text }}
+    </option>
+  </select>
 </template>
 
 <script>
@@ -32,33 +30,16 @@ export default {
   data() {
     return {
       isOpened: false,
-      // isAnyIcon: false,
     };
   },
 
-  // mounted() {
-  //   this.isAnyIcon = this.options.some(el => Object.keys(el).includes('icon'));
-  // },
-
   computed: {
-    // it seems this should be done in mounted
-    // so in won't recalculate on .pop() last item in menu
-    // but the test won't accept it
     isAnyIcon() {
       return this.options.some(el => Object.keys(el).includes('icon'));
     },
 
     selectedItem() {
       return this.modelValue && this.options.find(el => el.value == this.modelValue);
-    },
-
-    selectModelValue: {
-      get() {
-        return this.modelValue
-      },
-      set(newValue) {
-        this.$emit('update:modelValue', newValue)
-      },
     },
   },
 
@@ -67,7 +48,6 @@ export default {
       handler(newValue) {
 
         if (newValue.length) {
-          // too complicated?
           if (!newValue.some(el => el.value == this.modelValue)) {
             this.$emit('update:modelValue', newValue[newValue.length - 1].value);
           }

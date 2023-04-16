@@ -1,6 +1,6 @@
 <template>
   <label class="checkbox">
-    <input type="checkbox" class="checkbox__input" v-model="checkModel" v-bind="$attrs"/>
+    <input type="checkbox" class="checkbox__input" v-model="checkModel" v-bind="$attrs" ref="input"/>
     <span class="checkbox__box"></span>
     <slot />
   </label>
@@ -10,65 +10,23 @@
 export default {
   name: 'UiCheckbox',
   inheritAttrs: false,
+
   props: {
     modelValue: {
       type: [Boolean, Array, Set],
       required: true,
-    },
-
-    value: {
-      type: String,
     },
   },
 
   emits: ['update:modelValue'],
 
   computed: {
-    argType() {
-      return typeof this.modelValue == 'boolean' ? 'boolean' : Array.isArray(this.modelValue) ? 'array' : 'set';
-    },
-
     checkModel: {
       get() {
-        // console.log(this.value)
-        let value;
-        switch (this.argType) {
-          case 'boolean':
-            value = this.modelValue;
-            break;
-          case 'array':
-            value = this.modelValue.includes(this.value);
-            break;
-          case 'set':
-            value = this.modelValue.has(this.value);
-            break;
-        }
-        return value;
+        return this.modelValue;
       },
       set(data) {
-        let newData;
-        switch (this.argType) {
-          case 'boolean':
-            newData = data;
-            break;
-          case 'array':
-            newData = [...this.modelValue];
-            if (newData.includes(this.value)) {
-              newData = newData.filter((item) => item != this.value);
-            } else {
-              newData.push(this.value);
-            }
-            break;
-          case 'set':
-            newData = new Set(this.modelValue);
-            if (newData.has(this.value)) {
-              newData.delete(this.value);
-            } else {
-              newData.add(this.value);
-            }
-
-        }
-        this.$emit('update:modelValue', newData);
+        this.$emit('update:modelValue', data);
       }
     }
   }

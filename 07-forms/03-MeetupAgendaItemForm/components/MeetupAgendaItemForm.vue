@@ -1,38 +1,92 @@
 <template>
   <fieldset class="agenda-item-form">
-    <button type="button" class="agenda-item-form__remove-button">
+    <button type="button" class="agenda-item-form__remove-button" @click="$emit('remove')">
       <UiIcon icon="trash" />
     </button>
 
     <UiFormGroup>
-      <UiDropdown title="Тип" :options="$options.agendaItemTypeOptions" name="type" />
+      <UiDropdown title="Тип" :options="$options.agendaItemTypeOptions" name="type" :model-value="agendaItem.type" @update:modelValue="$emit('update:agendaItem', { ...agendaItem, type: $event })" />
     </UiFormGroup>
 
     <div class="agenda-item-form__row">
       <div class="agenda-item-form__col">
         <UiFormGroup label="Начало">
-          <UiInput type="time" placeholder="00:00" name="startsAt" />
+          <UiInput type="time" placeholder="00:00" name="startsAt" :model-value="agendaItem.startsAt" @change="handleBeginShift" />
         </UiFormGroup>
       </div>
       <div class="agenda-item-form__col">
         <UiFormGroup label="Окончание">
-          <UiInput type="time" placeholder="00:00" name="endsAt" />
+          <UiInput type="time" placeholder="00:00" name="endsAt" :model-value="agendaItem.endsAt" @change="$emit('update:agendaItem', { ...agendaItem, endsAt: $event.target.value })" />
         </UiFormGroup>
       </div>
     </div>
 
-    <UiFormGroup label="Тема">
-      <UiInput name="title" />
-    </UiFormGroup>
-    <UiFormGroup label="Докладчик">
-      <UiInput name="speaker" />
-    </UiFormGroup>
-    <UiFormGroup label="Описание">
-      <UiInput multiline name="description" />
-    </UiFormGroup>
-    <UiFormGroup label="Язык">
-      <UiDropdown title="Язык" :options="$options.talkLanguageOptions" name="language" />
-    </UiFormGroup>
+    <template v-if="agendaItem.type == 'talk'">
+      <!-- Тема -->
+      <UiFormGroup label="Тема">
+        <UiInput name="title" :model-value="agendaItem.title" @change="
+          $emit('update:agendaItem', {
+            ...agendaItem,
+            title: $event.target.value,
+          })
+        " />
+      </UiFormGroup>
+      <!-- Докладчик -->
+      <UiFormGroup label="Докладчик">
+        <UiInput name="speaker" :model-value="agendaItem.speaker" @change="
+          $emit('update:agendaItem', {
+            ...agendaItem,
+            speaker: $event.target.value,
+          })
+        " />
+      </UiFormGroup>
+      <!-- Описание -->
+      <UiFormGroup label="Описание">
+        <UiInput multiline name="description" :model-value="agendaItem.description" @change="
+          $emit('update:agendaItem', {
+            ...agendaItem,
+            description: $event.target.value,
+          })
+        " />
+      </UiFormGroup>
+      <!-- Язык -->
+      <UiFormGroup label="Язык">
+        <UiDropdown title="Язык" :options="$options.talkLanguageOptions" name="language" :model-value="agendaItem.language" @update:modelValue="$emit('update:agendaItem', { ...agendaItem, language: $event })" />
+      </UiFormGroup>
+    </template>
+
+    <template v-if="agendaItem.type == 'other'">
+      <!-- Заголовок -->
+      <UiFormGroup label="Заголовок" v-if="agendaItem.type == 'other'">
+        <UiInput name="title" :model-value="agendaItem.title" @change="
+          $emit('update:agendaItem', {
+            ...agendaItem,
+            title: $event.target.value,
+          })
+        " />
+      </UiFormGroup>
+      <!-- Описание -->
+      <UiFormGroup label="Описание">
+        <UiInput multiline name="description" :model-value="agendaItem.description" @change="
+          $emit('update:agendaItem', {
+            ...agendaItem,
+            description: $event.target.value,
+          })
+        " />
+      </UiFormGroup>
+    </template>
+
+
+    <template v-if="['registration', 'opening', 'break', 'coffee', 'closing', 'afterparty'].includes(agendaItem.type)">
+      <UiFormGroup label="Нестандартный текст (необязательно)" v-if="agendaItem.type != 'talk' && agendaItem.type != 'other'">
+        <UiInput name="title" :model-value="agendaItem.title" @change="
+          $emit('update:agendaItem', {
+            ...agendaItem,
+            title: $event.target.value,
+          })
+        " />
+      </UiFormGroup>
+    </template>
   </fieldset>
 </template>
 
@@ -84,12 +138,49 @@ export default {
 
   components: { UiIcon, UiFormGroup, UiInput, UiDropdown },
 
+  emits: ['update:agendaItem', 'remove'],
+
   props: {
     agendaItem: {
       type: Object,
       required: true,
     },
   },
+
+  methods: {
+    handleBeginShift(event) {
+      const oldBeginTime = this.getTS(this.agendaItem.startsAt);
+      const newBeginTime = this.getTS(event.target.value);
+      const oldEndTime = this.getTS(this.agendaItem.endsAt);
+      
+      const newEndTime = oldEndTime + (newBeginTime - oldBeginTime);
+      
+      this.$emit('update:agendaItem', {
+        ...this.agendaItem,
+        startsAt: event.target.value,
+        endsAt: this.getTextTime(newEndTime),
+      })
+    },
+
+    getTS(textTime) {
+      const [h, m] = textTime.split(':');
+      const ts = new Date().setHours(h, m);
+      return ts;
+    },
+    
+    getTextTime(ts) {
+      const date = new Date(ts);
+      const hours = date
+        .getHours()
+        .toString()
+        .padStart(2, '0');
+      const minutes = date
+        .getMinutes()
+        .toString()
+        .padStart(2, '0');
+      return `${hours}:${minutes}`
+    },
+  }
 };
 </script>
 
@@ -123,7 +214,7 @@ export default {
   flex-direction: column;
 }
 
-.agenda-item-form__col + .agenda-item-form__col {
+.agenda-item-form__col+.agenda-item-form__col {
   margin-top: 16px;
 }
 
@@ -152,7 +243,7 @@ export default {
     padding: 0 12px;
   }
 
-  .agenda-item-form__col + .agenda-item-form__col {
+  .agenda-item-form__col+.agenda-item-form__col {
     margin-top: 0;
   }
 

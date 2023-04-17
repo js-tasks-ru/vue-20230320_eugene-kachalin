@@ -17,7 +17,9 @@ describe('forms/MeetupAgendaItemForm', () => {
         speaker: 'SpeakerTest',
         language: 'RU',
       };
-      wrapper = mount(MeetupAgendaItemForm, { props: { agendaItem } });
+      wrapper = mount(MeetupAgendaItemForm, {
+        props: { agendaItem, 'onUpdate:agendaItem': ($event) => wrapper.setProps({ agendaItem: $event }) },
+      });
     });
 
     it('MeetupAgendaItemForm должен порождать событие remove при клике на кнопку удаления', async () => {

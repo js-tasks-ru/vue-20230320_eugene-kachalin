@@ -76,7 +76,6 @@
       </UiFormGroup>
     </template>
 
-
     <template v-if="['registration', 'opening', 'break', 'coffee', 'closing', 'afterparty'].includes(agendaItem.type)">
       <UiFormGroup label="Нестандартный текст (необязательно)" v-if="agendaItem.type != 'talk' && agendaItem.type != 'other'">
         <UiInput name="title" :model-value="agendaItem.title" @change="

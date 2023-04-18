@@ -43,7 +43,7 @@ export default {
 
   methods: {
     handleSubmit() {
-      this.$router.push(this.$route.query.from ?? { name: 'index' });
+      this.$router.push(this.from);
     },
   },
 };

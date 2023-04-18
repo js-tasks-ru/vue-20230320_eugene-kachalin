@@ -16,16 +16,14 @@ export default {
 
   watch: {
     count(value) {
-      if (this.localCount != value) {
-        this.localCount = value
-      }
+        this.localCount = value;
     }
   },
 
   methods: {
     increaseCount() {
       this.localCount++;
-      this.$emit('update:count', this.localCount)
+      this.$emit('update:count', this.localCount);
     }
   },
 

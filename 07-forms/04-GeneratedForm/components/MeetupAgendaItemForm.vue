@@ -103,7 +103,6 @@ const agendaItemFormSchemas = {
     title: {
       label: 'Тема',
       component: 'ui-input',
-      model: 'localItem.title',
       props: {
         name: 'title',
       },
@@ -118,7 +117,6 @@ const agendaItemFormSchemas = {
     description: {
       label: 'Описание',
       component: 'ui-input',
-      model: 'localItem.description',
       props: {
         multiline: true,
         name: 'description',
@@ -127,7 +125,6 @@ const agendaItemFormSchemas = {
     language: {
       label: 'Язык',
       component: 'ui-dropdown',
-      model: 'localItem.language',
       props: {
         options: talkLanguageOptions,
         title: 'Язык',
@@ -143,7 +140,6 @@ const agendaItemFormSchemas = {
     title: {
       label: 'Заголовок',
       component: 'ui-input',
-      model: 'localItem.title',
       props: {
         name: 'title',
       },
@@ -185,10 +181,6 @@ export default {
       localItem: { ...this.agendaItem },
     }
   },
-
-  // created() {
-  //   this.localItem = { ...this.agendaItem }
-  // },
 
   watch: {
     localItem: {

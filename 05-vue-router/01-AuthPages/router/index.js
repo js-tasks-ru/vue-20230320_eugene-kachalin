@@ -11,6 +11,7 @@ export const router = createRouter({
     {
       path: '/login',
       name: 'login',
+      props: (to) => ({ from: to.query.from }),
       component: () => import('../views/PageLogin'),
     },
     {

@@ -1,32 +1,36 @@
 <template>
   <fieldset class="agenda-item-form">
-    <button type="button" class="agenda-item-form__remove-button">
+    <button type="button" class="agenda-item-form__remove-button" @click="$emit('remove')">
       <UiIcon icon="trash" />
     </button>
 
     <UiFormGroup>
-      <UiDropdown title="Тип" :options="$options.agendaItemTypeOptions" name="type" />
+      <UiDropdown title="Тип" :options="$options.agendaItemTypeOptions" name="type" v-model="localItem.type" />
     </UiFormGroup>
 
     <div class="agenda-item-form__row">
       <div class="agenda-item-form__col">
         <UiFormGroup label="Начало">
-          <UiInput type="time" placeholder="00:00" name="startsAt" />
+          <UiInput type="time" placeholder="00:00" name="startsAt" v-model="localItem.startsAt" />
         </UiFormGroup>
       </div>
       <div class="agenda-item-form__col">
         <UiFormGroup label="Окончание">
-          <UiInput type="time" placeholder="00:00" name="endsAt" />
+          <UiInput type="time" placeholder="00:00" name="endsAt" v-model="localItem.endsAt" />
         </UiFormGroup>
       </div>
     </div>
 
-    <UiFormGroup label="Заголовок">
-      <UiInput name="title" />
+    <UiFormGroup v-for="item in formSchema" :key="item.label" :label="item.label">
+      
+      <component :is="item.component" v-model="localItem[item.props.name]" v-bind="item.props" /> {{ item }}
+    
     </UiFormGroup>
-    <UiFormGroup label="Описание">
+    
+    
+    <!-- <UiFormGroup label="Описание">
       <UiInput multiline name="description" />
-    </UiFormGroup>
+    </UiFormGroup> -->
   </fieldset>
 </template>
 
@@ -99,6 +103,7 @@ const agendaItemFormSchemas = {
     title: {
       label: 'Тема',
       component: 'ui-input',
+      model: 'localItem.title',
       props: {
         name: 'title',
       },
@@ -113,6 +118,7 @@ const agendaItemFormSchemas = {
     description: {
       label: 'Описание',
       component: 'ui-input',
+      model: 'localItem.description',
       props: {
         multiline: true,
         name: 'description',
@@ -121,6 +127,7 @@ const agendaItemFormSchemas = {
     language: {
       label: 'Язык',
       component: 'ui-dropdown',
+      model: 'localItem.language',
       props: {
         options: talkLanguageOptions,
         title: 'Язык',
@@ -136,6 +143,7 @@ const agendaItemFormSchemas = {
     title: {
       label: 'Заголовок',
       component: 'ui-input',
+      model: 'localItem.title',
       props: {
         name: 'title',
       },
@@ -165,6 +173,67 @@ export default {
       required: true,
     },
   },
+
+  computed: {
+    formSchema() {
+      return agendaItemFormSchemas[this.agendaItem.type];
+    },
+  },
+
+  data() {
+    return {
+      localItem: { ...this.agendaItem },
+    }
+  },
+
+  // created() {
+  //   this.localItem = { ...this.agendaItem }
+  // },
+
+  watch: {
+    localItem: {
+      deep: true,
+      handler(newValue) {
+        this.$emit('update:agendaItem', { ...newValue });
+      },
+    },
+    'localItem.startsAt'(newValue, oldValue) {
+      this.handleBeginShift(newValue, oldValue)
+    }
+  },
+
+  emits: ['update:agendaItem', 'remove'],
+
+  methods: {
+    handleBeginShift(newValue, oldValue) {
+      const oldBeginTime = this.getTS(oldValue);
+      const newBeginTime = this.getTS(newValue);
+      
+      const oldEndTime = this.getTS(this.localItem.endsAt);
+      const newEndTime = oldEndTime + (newBeginTime - oldBeginTime);
+      
+      this.localItem.endsAt = this.getTextTime(newEndTime);
+    },
+
+    getTS(textTime) {
+      const [h, m] = textTime.split(':');
+      const ts = new Date().setHours(h, m);
+      return ts;
+    },
+
+    getTextTime(ts) {
+      const date = new Date(ts);
+      const hours = date
+        .getHours()
+        .toString()
+        .padStart(2, '0');
+      const minutes = date
+        .getMinutes()
+        .toString()
+        .padStart(2, '0');
+      return `${hours}:${minutes}`
+    },
+  }
 };
 </script>
 
@@ -198,7 +267,7 @@ export default {
   flex-direction: column;
 }
 
-.agenda-item-form__col + .agenda-item-form__col {
+.agenda-item-form__col+.agenda-item-form__col {
   margin-top: 16px;
 }
 
@@ -227,7 +296,7 @@ export default {
     padding: 0 12px;
   }
 
-  .agenda-item-form__col + .agenda-item-form__col {
+  .agenda-item-form__col+.agenda-item-form__col {
     margin-top: 0;
   }
 

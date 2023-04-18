@@ -14,6 +14,7 @@
           <UiInput type="time" placeholder="00:00" name="startsAt" :model-value="agendaItem.startsAt" @change="handleBeginShift" />
         </UiFormGroup>
       </div>
+      <!-- ошибочное решение через нативные события, в следующей задаче исправлено -->
       <div class="agenda-item-form__col">
         <UiFormGroup label="Окончание">
           <UiInput type="time" placeholder="00:00" name="endsAt" :model-value="agendaItem.endsAt" @change="$emit('update:agendaItem', { ...agendaItem, endsAt: $event.target.value })" />

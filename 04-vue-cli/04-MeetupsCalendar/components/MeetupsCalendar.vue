@@ -21,7 +21,8 @@
 </template>
 
 <script>
-import Calendar from '../services/calendar.js';
+import * as cal from '../services/calendar.js';
+import dayjs from 'dayjs';
 
 export default {
   name: 'MeetupsCalendar',
@@ -36,12 +37,11 @@ export default {
   data() {
     return {
       selectedDate: new Date(),
-      cal: new Calendar(new Date())
+      selDate: dayjs(),
     };
   },
 
   computed: {
-
     meetupsByDate() {
       const result = {};
       for (const meetup of this.meetups) {
@@ -57,12 +57,15 @@ export default {
     days() {
       return [
         ...this.previousMonthDays,
-        ...this.currentMonthDays,
+        ...cal.currentMonthDays(),
         ...this.nextMonthDays
       ];
     },
 
     todayText() {
+      const d = cal.todayText(this.selDate);
+      console.log(d)
+
       return this.selectedDate.toLocaleDateString(navigator.language, {
         month: 'long',
         year: 'numeric',
@@ -70,29 +73,11 @@ export default {
     },
 
     month() {
-      return this.selectedDate.getMonth();
+      return cal.month();
     },
 
     year() {
-      return this.selectedDate.getFullYear();
-    },
-
-    currentMonthDays() {
-      const days = new Date(this.year, this.month + 1, 0).getDate();
-      // this.cal.setDate()
-      return [...Array(days)].map((day, index) => {
-
-        let date = new Date(
-          this.cal.year(),
-          this.cal.month(),
-          index + 1);
-
-        return {
-          date: date.getDate(),
-          isCurrentMonth: true,
-          meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
-        };
-      });
+      return cal.year();
     },
 
     previousMonthDays() {

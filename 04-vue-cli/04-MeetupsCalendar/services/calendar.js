@@ -1,28 +1,75 @@
-export default class Calendar {
+import dayjs from 'dayjs';
 
-    constructor(date) {
-        if (!date) this.date = new Date()
-        this.date = date;
-    }
+let today = dayjs();
 
-    setDate(date) {
-        if (!date) this.date = new Date()
+function todayText(time = today) {
+    return time.toString();
+}
 
-        this.date = date;
-    }
+function year(time = today) {
+    return time.year();
+}
 
-    todayText() {
-        return this.date.toLocaleDateString(navigator.language, {
-            month: 'long',
-            year: 'numeric',
-        })
-    }
+function month(time = today) {
+    return time.month();
+}
 
-    month() {
-        return this.date.getMonth();
-    }
+function date(time = today) {
+    return time.date();
+}
 
-    year() {
-        return this.date.getFullYear();
-    }
+function dow(time = today) {
+    return time.day();
+}
+
+function daysInMonth(time = today) {
+    return time.daysInMonth();
+}
+
+function currentMonthDays() {
+    const days = today.daysInMonth();
+    return [...Array(days)].map((day, index) => {
+
+        let calendarDay = new dayjs(
+            `${year()}-${month()}-${index + 1}`
+        );
+
+        return {
+            date: date(calendarDay),
+            isCurrentMonth: true,
+            // meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
+        };
+    });
+}
+
+function previousMonthDays() {
+    // days == Sunday => 0 days for the previous month
+    const days = new Date(this.year, this.month, 0).getDay();
+
+    if (!days) return [];
+
+    return [...Array(days)].map((day, index) => {
+
+        let date = new Date(
+            this.year,
+            this.month,
+            // Magic
+            index - days + 1);
+
+        return {
+            date: date.getDate(),
+            isCurrentMonth: false,
+            meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
+        };
+    });
+}
+
+export { 
+    todayText, 
+    year, 
+    month, 
+    date, 
+    dow,
+    daysInMonth,
+    currentMonthDays
 }

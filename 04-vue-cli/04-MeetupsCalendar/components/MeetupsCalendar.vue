@@ -3,7 +3,7 @@
     <div class="calendar-view__controls">
       <div class="calendar-view__controls-inner">
         <button class="calendar-view__control-left" type="button" aria-label="Previous month" @click="previousMonth"></button>
-        <div class="calendar-view__date">{{ todayText }}</div>
+        <div class="calendar-view__date">{{ calendar.todayText() }}</div>
         <button class="calendar-view__control-right" type="button" aria-label="Next month" @click="nextMonth"></button>
       </div>
     </div>
@@ -23,6 +23,7 @@
 <script>
 import * as cal from '../services/calendar.js';
 import dayjs from 'dayjs';
+import Calendar from '../services/calendar.js';
 
 export default {
   name: 'MeetupsCalendar',
@@ -36,12 +37,21 @@ export default {
 
   data() {
     return {
-      selectedDate: new Date(),
-      selDate: dayjs(),
+      // days: cal.daysLaLaLa(),
+      // todayText: cal.todayText(),
+      calendar: new Calendar({
+        date: new Date(),
+        meetups: this.meetups,
+      }),
     };
   },
 
   computed: {
+    days() {
+      console.log(this.calendar.currentMonth)
+      return this.calendar.daysLaLaLa()
+    },
+
     meetupsByDate() {
       const result = {};
       for (const meetup of this.meetups) {
@@ -53,87 +63,16 @@ export default {
       }
       return result;
     },
-
-    days() {
-      return [
-        ...this.previousMonthDays,
-        ...cal.currentMonthDays(),
-        ...this.nextMonthDays
-      ];
-    },
-
-    todayText() {
-      const d = cal.todayText(this.selDate);
-      console.log(d)
-
-      return this.selectedDate.toLocaleDateString(navigator.language, {
-        month: 'long',
-        year: 'numeric',
-      })
-    },
-
-    month() {
-      return cal.month();
-    },
-
-    year() {
-      return cal.year();
-    },
-
-    previousMonthDays() {
-      // days == Sunday => 0 days for the previous month
-      const days = new Date(this.year, this.month, 0).getDay();
-
-      if (!days) return [];
-
-      return [...Array(days)].map((day, index) => {
-
-        let date = new Date(
-          this.year,
-          this.month,
-          // Magic
-          index - days + 1);
-
-        return {
-          date: date.getDate(),
-          isCurrentMonth: false,
-          meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
-        };
-      });
-    },
-
-    nextMonthDays() {
-      // Sunday == 0 => 0 days left for the next month
-      let days = new Date(this.year, this.month + 1, 0).getDay();
-
-      if (!days) return [];
-      days = 7 - days;
-
-      return [...Array(days)].map((day, index) => {
-
-        let date = new Date(
-          this.year,
-          this.month,
-          index + 1);
-
-        return {
-          date: date.getDate(),
-          isCurrentMonth: false,
-          meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
-        };
-      });
-    },
-
   },
 
   methods: {
     nextMonth() {
-      this.selectedDate = new Date(this.year, this.month + 1);
+      this.calendar.incrementMonth();
     },
 
-    previousMonth() {
-      this.selectedDate = new Date(this.year, this.month - 1);
-    },
+    // previousMonth() {
+    //   this.selectedDate = new Date(this.year, this.month - 1);
+    // },
   },
 };
 </script>

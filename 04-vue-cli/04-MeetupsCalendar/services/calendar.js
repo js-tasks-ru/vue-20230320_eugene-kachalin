@@ -1,75 +1,113 @@
 import dayjs from 'dayjs';
+import arraySupport from 'dayjs/plugin/arraySupport';
+import utc from 'dayjs/plugin/utc';
+import isToday from 'dayjs/plugin/isToday';
+import weekday from 'dayjs/plugin/weekday';
+import locale from 'dayjs/locale/ru';
 
-let today = dayjs();
+dayjs
+    .extend(weekday)
+    .extend(utc)
+    .extend(isToday)
+    .extend(arraySupport)
+    .locale(locale);
 
-function todayText(time = today) {
-    return time.toString();
-}
+let currentMonth = dayjs().subtract(0, 'month');
 
-function year(time = today) {
-    return time.year();
-}
 
-function month(time = today) {
-    return time.month();
-}
 
-function date(time = today) {
-    return time.date();
-}
+export default class Calendar {
+    constructor(
+        { date = dayjs(), meetups = [] } = {}
+    ) {
+        this.currentMonth = date;
+        this.meetups = meetups;
+    }
 
-function dow(time = today) {
-    return time.day();
-}
+    todayText(time = currentMonth) {
+        return currentMonth.toDate().toLocaleDateString(navigator.language, {
+            month: 'long',
+            year: 'numeric',
+        })
+    }
 
-function daysInMonth(time = today) {
-    return time.daysInMonth();
-}
+    currentMonthDays() {
+        const days = currentMonth
+            .daysInMonth();
 
-function currentMonthDays() {
-    const days = today.daysInMonth();
-    return [...Array(days)].map((day, index) => {
+        return [...Array(days)].map((_, index) => {
+            const magic = index + 1;
 
-        let calendarDay = new dayjs(
-            `${year()}-${month()}-${index + 1}`
-        );
+            const calendarDay = dayjs([
+                currentMonth.year(), currentMonth.month(), magic
+            ]);
 
-        return {
-            date: date(calendarDay),
-            isCurrentMonth: true,
-            // meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
-        };
-    });
-}
+            return {
+                date: calendarDay.date(),
+                _dateObject: calendarDay,
+                isCurrentMonth: calendarDay.month() == currentMonth.month(),
+                // meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
+            };
+        });
+    }
 
-function previousMonthDays() {
-    // days == Sunday => 0 days for the previous month
-    const days = new Date(this.year, this.month, 0).getDay();
+    previousMonthDays() {
+        // 0 for Monday
+        const days = currentMonth
+            .date(1)
+            .weekday();
 
-    if (!days) return [];
+        return [...Array(days)].map((_, index) => {
+            const magic = index - days + 1;
 
-    return [...Array(days)].map((day, index) => {
+            const calendarDay = dayjs([
+                currentMonth.year(), currentMonth.month(), magic
+            ]);
 
-        let date = new Date(
-            this.year,
-            this.month,
-            // Magic
-            index - days + 1);
+            return {
+                date: calendarDay.date(),
+                _dateObject: calendarDay,
+                isCurrentMonth: calendarDay.month() == currentMonth.month(),
+                // meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
+            };
+        });
+    }
 
-        return {
-            date: date.getDate(),
-            isCurrentMonth: false,
-            meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
-        };
-    });
-}
+    nextMonthDays() {
+        const days = (7 - 1)
+            - currentMonth
+                .date(currentMonth.daysInMonth())
+                .weekday();
 
-export { 
-    todayText, 
-    year, 
-    month, 
-    date, 
-    dow,
-    daysInMonth,
-    currentMonthDays
+        return [...Array(days)].map((_, index) => {
+
+            let magic = currentMonth.daysInMonth() + index + 1;
+
+            let calendarDay = dayjs([
+                currentMonth.year(), currentMonth.month(), magic
+            ]);
+
+            return {
+                date: calendarDay.date(),
+                _dateObject: calendarDay,
+                isCurrentMonth: calendarDay.month() == currentMonth.month(),
+                // meetupsForDay: this.meetupsByDate[date.getTime() - date.getTimezoneOffset() * 60000],
+            };
+        });
+    }
+
+    daysLaLaLa() {
+        return [
+            ...this.previousMonthDays(),
+            ...this.currentMonthDays(),
+            ...this.nextMonthDays(),
+        ];
+    }
+
+    incrementMonth() {
+        console.log('lalala')
+        console.log(this.currentMonth, this.currentMonth.add(1, 'month'))
+        this.currentMonth = this.currentMonth.add(1, 'month');
+        console.log(currentMonth)
+    }
 }

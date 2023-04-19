@@ -2,17 +2,20 @@
   <div class="calendar-view">
     <div class="calendar-view__controls">
       <div class="calendar-view__controls-inner">
-        <button class="calendar-view__control-left" type="button" aria-label="Previous month" @click="previousMonth"></button>
-        <div class="calendar-view__date">{{ calendar.todayText() }}</div>
-        <button class="calendar-view__control-right" type="button" aria-label="Next month" @click="nextMonth"></button>
+        <button class="calendar-view__control-left" type="button" aria-label="Previous month" @click="decrementMonth"></button>
+        <div class="calendar-view__date">{{ calendar.todayText }}</div>
+        <button class="calendar-view__control-right" type="button" aria-label="Next month" @click="incrementMonth"></button>
       </div>
     </div>
 
     <div class="calendar-view__grid">
-      <div class="calendar-view__cell" :class="{ 'calendar-view__cell_inactive': !day.isCurrentMonth }" tabindex="0" v-for="day in days" :key="day">
+      <div class="calendar-view__cell" :class="{
+        'calendar-view__cell_inactive': !day.isCurrentMonth, 
+        'calendar-view__cell_today': day.isToday,
+        }" tabindex="0" v-for="day in days" :key="day">
         <div class="calendar-view__cell-day">{{ day.date }}</div>
         <div class="calendar-view__cell-content">
-          <div class="calendar-event" v-for="meetup in day.meetupsForDay" :key="meetup.id">{{ meetup.title }}
+          <div class="calendar-event" v-for="meetup in day.meetups" :key="meetup.id">{{ meetup.title }}
           </div>
         </div>
       </div>
@@ -21,8 +24,6 @@
 </template>
 
 <script>
-import * as cal from '../services/calendar.js';
-import dayjs from 'dayjs';
 import Calendar from '../services/calendar.js';
 
 export default {
@@ -37,10 +38,7 @@ export default {
 
   data() {
     return {
-      // days: cal.daysLaLaLa(),
-      // todayText: cal.todayText(),
       calendar: new Calendar({
-        date: new Date(),
         meetups: this.meetups,
       }),
     };
@@ -48,8 +46,7 @@ export default {
 
   computed: {
     days() {
-      console.log(this.calendar.currentMonth)
-      return this.calendar.daysLaLaLa()
+      return this.calendar.days;
     },
 
     meetupsByDate() {
@@ -66,13 +63,13 @@ export default {
   },
 
   methods: {
-    nextMonth() {
+    incrementMonth() {
       this.calendar.incrementMonth();
     },
 
-    // previousMonth() {
-    //   this.selectedDate = new Date(this.year, this.month - 1);
-    // },
+    decrementMonth() {
+      this.calendar.decrementMonth();
+    },
   },
 };
 </script>
@@ -155,6 +152,10 @@ export default {
 
 .calendar-view__cell.calendar-view__cell_inactive {
   background-color: var(--grey-light);
+}
+
+.calendar-view__cell.calendar-view__cell_today {
+  background-color: var(--blue-extra);
 }
 
 @media all and (max-width: 767px) {

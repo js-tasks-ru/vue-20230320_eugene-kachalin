@@ -2,17 +2,20 @@
   <div class="calendar-view">
     <div class="calendar-view__controls">
       <div class="calendar-view__controls-inner">
-        <button class="calendar-view__control-left" type="button" aria-label="Previous month" @click="previousMonth"></button>
-        <div class="calendar-view__date">{{ todayText }}</div>
-        <button class="calendar-view__control-right" type="button" aria-label="Next month" @click="nextMonth"></button>
+        <button class="calendar-view__control-left" type="button" aria-label="Previous month" @click="decrementMonth"></button>
+        <div class="calendar-view__date">{{ calendar.todayText }}</div>
+        <button class="calendar-view__control-right" type="button" aria-label="Next month" @click="incrementMonth"></button>
       </div>
     </div>
 
     <div class="calendar-view__grid">
-      <div class="calendar-view__cell" :class="{ 'calendar-view__cell_inactive': !day.isCurrentMonth }" tabindex="0" v-for="day in days" :key="day">
+      <div class="calendar-view__cell" :class="{
+        'calendar-view__cell_inactive': !day.isCurrentMonth, 
+        'calendar-view__cell_today': day.isToday,
+        }" tabindex="0" v-for="day in days" :key="day">
         <div class="calendar-view__cell-day">{{ day.date }}</div>
         <div class="calendar-view__cell-content">
-          <div class="calendar-event" v-for="meetup in day.meetupsForDay" :key="meetup.id">{{ meetup.title }}
+          <div class="calendar-event" v-for="meetup in day.meetups" :key="meetup.id">{{ meetup.title }}
           </div>
         </div>
       </div>
@@ -21,6 +24,8 @@
 </template>
 
 <script>
+import Calendar from '../services/calendar.js';
+
 export default {
   name: 'MeetupsCalendar',
 
@@ -33,120 +38,37 @@ export default {
 
   data() {
     return {
-      selectedDate: new Date(),
+      calendar: new Calendar({
+        meetups: this.meetups,
+      }),
     };
   },
 
   computed: {
     days() {
-      return [
-        ...this.previousMonthDays,
-        ...this.currentMonthDays,
-        ...this.nextMonthDays
-      ];
+      return this.calendar.days;
     },
 
-    todayText() {
-      return this.selectedDate.toLocaleDateString(navigator.language, {
-        month: 'long',
-        year: 'numeric',
-      })
+    meetupsByDate() {
+      const result = {};
+      for (const meetup of this.meetups) {
+        if (!result[meetup.date]) {
+          result[meetup.date] = [meetup];
+        } else {
+          result[meetup.date].push(meetup);
+        }
+      }
+      return result;
     },
-
-    month() {
-      return this.selectedDate.getMonth();
-    },
-
-    year() {
-      return this.selectedDate.getFullYear();
-    },
-
-    currentMonthDays() {
-      const days = new Date(this.year, this.month + 1, 0).getDate();
-
-      return [...Array(days)].map((day, index) => {
-
-        let date = new Date(
-          this.year,
-          this.month,
-          index + 1);
-
-        const meetupsForDay = this.fetchMeetups(date);
-
-        return {
-          date: date.getDate(),
-          isCurrentMonth: true,
-          meetupsForDay: meetupsForDay,
-        };
-      });
-    },
-
-    previousMonthDays() {
-      // days == Sunday => 0 days for the previous month
-      const days = new Date(this.year, this.month, 0).getDay();
-
-      if (!days) return [];
-
-      return [...Array(days)].map((day, index) => {
-
-        let date = new Date(
-          this.year,
-          this.month,
-          // Magic
-          index - days + 1);
-
-        const meetupsForDay = this.fetchMeetups(date);
-
-        return {
-          date: date.getDate(),
-          isCurrentMonth: false,
-          meetupsForDay: meetupsForDay,
-        };
-      });
-    },
-
-    nextMonthDays() {
-      // Sunday == 0 => 0 days left for the next month
-      let days = new Date(this.year, this.month + 1, 0).getDay();
-
-      if (!days) return [];
-      days = 7 - days;
-
-      return [...Array(days)].map((day, index) => {
-
-        let date = new Date(
-          this.year,
-          this.month,
-          index + 1);
-
-        const meetupsForDay = this.fetchMeetups(date);
-
-        return {
-          date: date.getDate(),
-          isCurrentMonth: false,
-          meetupsForDay: meetupsForDay,
-        };
-      });
-    },
-
   },
 
   methods: {
-    nextMonth() {
-      this.selectedDate = new Date(this.year, this.month + 1);
+    incrementMonth() {
+      this.calendar.incrementMonth();
     },
 
-    previousMonth() {
-      this.selectedDate = new Date(this.year, this.month - 1);
-    },
-
-    fetchMeetups(date) {
-      date = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
-
-      // seems to be O(n^2)
-      const meetupsForDay = this.meetups.filter(el => el.date == date);
-
-      return meetupsForDay;
+    decrementMonth() {
+      this.calendar.decrementMonth();
     },
   },
 };
@@ -230,6 +152,10 @@ export default {
 
 .calendar-view__cell.calendar-view__cell_inactive {
   background-color: var(--grey-light);
+}
+
+.calendar-view__cell.calendar-view__cell_today {
+  background-color: var(--blue-extra);
 }
 
 @media all and (max-width: 767px) {

@@ -23,7 +23,7 @@
 
     <UiFormGroup v-for="item in formSchema" :key="item.label" :label="item.label">
       
-      <component :is="item.component" v-model="localItem[item.props.name]" v-bind="item.props" /> {{ item }}
+      <component :is="item.component" v-model="localItem[item.props.name]" v-bind="item.props" />
     
     </UiFormGroup>
     

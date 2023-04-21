@@ -48,7 +48,7 @@ export default {
     days() {
       return this.calendar.days;
     },
-
+    // TODO разделить зоны ответственности
     meetupsByDate() {
       const result = {};
       for (const meetup of this.meetups) {

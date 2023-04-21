@@ -17,6 +17,7 @@ export default {
     // Для примера и ручного тестирования подойдёт и такое нетипичное решение
 
     this.source = ref(0);
+    // console.log(this.source)
 
     const { history } = refHistory(this.source);
     this.history = history;

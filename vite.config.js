@@ -127,6 +127,10 @@ export default defineConfig({
 
   resolve: {
     alias: [
+      {
+        find: 'vue',
+        replacement: 'vue/dist/vue.esm-bundler.js',
+      },
       // Migration from @vue/cli Taskbook: support for ~@ alias in css
       { find: '~@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
       // Migration from @vue/cli Taskbook: support for @ alias

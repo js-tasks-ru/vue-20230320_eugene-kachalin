@@ -5,7 +5,7 @@ import { compile } from 'vue';
 export default {
   name: 'TemplateRenderer',
 
-  // components() {return this.components},
+  // components: () => {this.components},
 
   props: {
     template: {
@@ -32,7 +32,13 @@ export default {
 
   computed: {
     renderFunction() {
-      return compile(this.template)
+      return compile(
+        this.template,
+        {
+          // still not working
+          isCustomElement: (tag) => tag.startsWith('ui-')
+        }
+      )
     }
   },
 

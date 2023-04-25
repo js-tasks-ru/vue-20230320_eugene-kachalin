@@ -1,11 +1,8 @@
 <script>
-import { compile } from 'vue';
-// Works
-// import UiAlert from '/Users/.../vue-20230320_eugene-kachalin/09-rendering/02-TemplateRenderer/components/UiAlert.vue';
+import { compile, defineComponent, h } from 'vue';
+
 export default {
   name: 'TemplateRenderer',
-
-  // components: () => {this.components},
 
   props: {
     template: {
@@ -24,26 +21,23 @@ export default {
     },
   },
 
-  // created() {
-  //   for (const name in this.components) {
-  //     // component(name)
-  //   }
-  // },
-
   computed: {
     renderFunction() {
-      return compile(
-        this.template,
-        {
-          // still not working
-          isCustomElement: (tag) => tag.startsWith('ui-')
-        }
-      )
+      return compile(this.template);
+    },
+
+    componentFromTemplate() {
+      return defineComponent({
+        name: 'InternalRenderer',
+        components: this.components,
+        props: ['bindings'],
+        render: this.renderFunction,
+      });
     }
   },
 
-  render(...args) {
-    return this.renderFunction.apply(this, args);
-  },
+  render() {
+    return h(this.componentFromTemplate, { bindings: this.bindings });
+  }
 }
 </script>

@@ -1,8 +1,10 @@
 <template>
   <UiCalendarView>
-    <UiCalendarEvent v-if="meetups[0]" tag="a" :href="`/meetups/${meetups[0].id}`">
-      {{ meetups[0].title }}
-    </UiCalendarEvent>
+    <template #default="{ day }">
+      <UiCalendarEvent v-for="meetup in meetupsForDay(day)" tag="a" :href="`/meetups/${meetup.id}`" :key="meetup.id">
+        {{ meetup.title }}
+      </UiCalendarEvent>
+    </template>
   </UiCalendarView>
 </template>
 
@@ -18,12 +20,36 @@ export default {
     UiCalendarView,
   },
 
+  data() {
+    return {
+      meetupsByDate: this.getMeetupsByDate(this.meetups),
+    }
+  },
+
   props: {
     meetups: {
       type: Array,
       required: true,
     },
   },
+
+  methods: {
+    meetupsForDay(day) {
+      return this.meetupsByDate[day.utcValue];
+    },
+
+    getMeetupsByDate(meetups) {
+      const result = {};
+      for (const meetup of meetups) {
+        if (!result[meetup.date]) {
+          result[meetup.date] = [meetup];
+        } else {
+          result[meetup.date].push(meetup);
+        }
+      }
+      return result;
+    }
+  }
 };
 </script>
 

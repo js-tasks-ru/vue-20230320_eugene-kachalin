@@ -13,37 +13,24 @@
           'calendar-view__cell_inactive': !day.isCurrentMonth,
           'calendar-view__cell_today': day.isToday,
         }" tabindex="0" v-for="day in days" :key="day">
-          <div class="calendar-view__cell-day">{{ day.date }}</div>
-          <div class="calendar-view__cell-content">
-            <div class="calendar-event" v-for="meetup in day.meetups" :key="meetup.id">{{ meetup.title }}
-            </div>
-          </div>
-        </div>
-      
-      <!-- <div class="calendar-view__cell" tabindex="0">
-        <div class="calendar-view__cell-day">7</div>
+        <div class="calendar-view__cell-day">{{ day.date }}</div>
         <div class="calendar-view__cell-content">
-          <slot />
+          <slot :day="day" />
         </div>
-      </div> -->
-      
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import dayjs from 'dayjs';
-import {
-  getDays,
-  getTodayText,
-} from '../services/calendarService.js'
+import { getDays, getTodayText, getToday } from '../services/calendarService.js'
 
 export default {
   name: 'UiCalendarView',
 
   data() {
     return {
-      currentDate: dayjs(),
+      currentDate: getToday(),
     }
   },
 

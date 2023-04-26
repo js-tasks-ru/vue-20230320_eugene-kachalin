@@ -25,7 +25,7 @@ function getDays(date) {
     // monday = 0 for dayjs.locale('ru')
     const nextMonthDays = (7 - 1)
         - date
-        .date(date.daysInMonth())
+            .date(date.daysInMonth())
             .weekday();
 
     for (let day = 1; day <= previousMonthDays; day++) {
@@ -53,20 +53,27 @@ function getTodayText(date) {
     })
 }
 
-function createDay({date, shift}) {
+function createDay({ date, shift }) {
     const calendarDay = dayjs([
         date.year(), date.month(), shift
     ]);
-    
+
     return {
         date: calendarDay.date(),
+        jsMonth: calendarDay.month(),
+        year: calendarDay.year(),
         isCurrentMonth: calendarDay.month() == date.month(),
-        // meetups: this._meetups[calendarDay.utc(calendarDay).valueOf()],
+        utcValue: calendarDay.utc(calendarDay).valueOf(),
         isToday: calendarDay.isToday(),
     };
+}
+
+function getToday() {
+    return dayjs();
 }
 
 export {
     getDays,
     getTodayText,
+    getToday,
 }

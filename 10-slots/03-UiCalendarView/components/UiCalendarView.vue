@@ -13,6 +13,7 @@
           'calendar-view__cell_inactive': !day.isCurrentMonth,
           'calendar-view__cell_today': day.isToday,
         }" tabindex="0" v-for="day in days" :key="day">
+        <!-- day: date-подобный объект для передачи через слот -->
         <div class="calendar-view__cell-day">{{ day.date }}</div>
         <div class="calendar-view__cell-content">
           <slot :day="day" />
@@ -23,7 +24,7 @@
 </template>
 
 <script>
-import { getDays, getTodayText, getToday } from '../services/calendarService.js'
+import { getDays, getTodayText, getToday, decrementMonth, incrementMonth, } from '../services/calendarService.js'
 
 export default {
   name: 'UiCalendarView',
@@ -45,11 +46,11 @@ export default {
 
   methods: {
     decrementMonth() {
-      this.currentDate = this.currentDate.subtract(1, 'month');
+      this.currentDate = decrementMonth(this.currentDate);
     },
 
     incrementMonth() {
-      this.currentDate = this.currentDate.add(1, 'month');
+      this.currentDate = incrementMonth(this.currentDate);
     },
   }
 };

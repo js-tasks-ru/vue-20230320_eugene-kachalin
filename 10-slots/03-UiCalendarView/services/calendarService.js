@@ -72,8 +72,18 @@ function getToday() {
     return dayjs();
 }
 
+function incrementMonth(date) {
+    return date.add(1, 'month');
+}
+
+function decrementMonth(date) {
+    return date.subtract(1, 'month');
+}
+
 export {
     getDays,
     getTodayText,
     getToday,
+    decrementMonth,
+    incrementMonth,
 }

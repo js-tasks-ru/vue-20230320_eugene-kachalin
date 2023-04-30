@@ -1,4 +1,4 @@
-import { computed, isRef } from 'vue';
+import { computed, unref } from 'vue';
 
 /**
  * @template T
@@ -7,12 +7,7 @@ import { computed, isRef } from 'vue';
  */
 export function reactify(func) {
   return (...args) => computed(() => {
-    let arr = []
-    args.forEach((el) => {
-      if (isRef(el)) arr.push(el.value)
-      else arr.push(el)
-    })
+    const arr = args.map((el) => unref(el));
     return func.apply(this, arr)
   });
 }
-// Скорее всего, неверно

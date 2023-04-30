@@ -28,16 +28,16 @@ export default {
 
     componentFromTemplate() {
       return defineComponent({
-        name: 'TemplateRendererInternal',
+        name: 'InternalRenderer',
         components: this.components,
         props: ['bindings'],
         render: this.renderFunction,
       });
-    },
+    }
   },
 
   render() {
     return h(this.componentFromTemplate, { bindings: this.bindings });
-  },
-};
+  }
+}
 </script>

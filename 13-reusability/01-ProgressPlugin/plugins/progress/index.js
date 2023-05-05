@@ -24,11 +24,11 @@ export function createProgress({ container, router } = {}) {
   }
 
   if (router) {
-    router.beforeEach((to, from) => {
+    router.beforeEach(() => {
       progress.start();
     })
 
-    router.afterEach((to, from) => {
+    router.afterEach(() => {
       progress.finish();
     })
 

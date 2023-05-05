@@ -20,9 +20,9 @@ export default {
     UiCalendarView,
   },
 
-  data() {
-    return {
-      meetupsByDate: this.getMeetupsByDate(this.meetups),
+  computed: {
+    meetupsByDate() {
+      return this.getMeetupsByDate(this.meetups);
     }
   },
 

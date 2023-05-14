@@ -32,6 +32,8 @@ export default {
     };
 
     const start = (loader) => {
+      // вроде бы надо
+      failed.value = false;
       if (loaders.size === 0) {
         progressTween.start({ to: MAX_PROGRESS });
       }
